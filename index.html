@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* Скрываем подсписки по умолчанию */
+        .sublist, .subsublist {
+            display: none;
+            margin-left: 15px; /* Добавляем отступ для подсписка */
+        }
+
+        /* Стиль для курсора на кликабельных элементах */
+        .clickable {
+            cursor: pointer;
+        }
+
+        * {
+            margin: 0px;
+            padding: 0px;
+            box-sizing: border-box;
+        }
+
+        .name {
+            font-size: 50px;
+            padding: 2% 0% 2% 0%;
+            background-color: DodgerBlue;
+        }
+
+        .spisok {
+            margin-left: 30px;
+            font-size: 30px;
+        }
+
+        /* Модальное окно (по умолчанию скрыто) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Тёмный фон */
+        }
+
+        /* Содержимое модального окна */
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 400px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
+        }
+
+        /* Закрыть модальное окно */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Блоки внутри модального окна */
+        .modal-block {
+            margin: 10px 0;
+        }
+
+        /* Подписи к полям */
+        .modal-label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="name">
+        <h1>Атом.Проект</h1>
+    </div>
+
+    <div class="spisok">
+        <ul>
+            <li>АСЭ</li>
+            <li>АПЭ</li>
+            <li style="padding: 0px;" class="clickable" onclick="toggleSublist('sublist')"><u>УАЗ</u>
+                <ul class="sublist" id="sublist">
+                    <li class="clickable" onclick="toggleSublist('subsublist', event)">Листы исполнения
+                        <ul class="subsublist" id="subsublist">
+                            <li class="clickable" onclick="openModal('modal1')">Создание учетной записи и добавление ролей</li>
+                            <li>Увольнение сотрудника</li>
+                            <li>Изменение ролей</li>
+                        </ul>
+                    </li>
+                    <li class="clickable" onclick="toggleSublist('workplaceSublist', event)">Рабочее место
+                        <ul class="subsublist" id="workplaceSublist">
+                            <li>Установка/обновление ПО</li>
+                            <li>Ремонт комплектующих</li>
+                            <li>Увеличение оперативной памяти</li>
+                            <li class="clickable" onclick="openModal('modal2')">Замена аксессуаров</li>
+                        </ul>
+                    </li>
+                    <li>ЕОСДО</li>
+                    <li>Принтер</li>
+                    <li>КУРС</li>
+                    <li>SAP</li>
+                </ul>
+            </li>
+            <li>ГК РОСАТОМ</li>
+            <li>МИИТ</li>
+            <li>.......</li>
+        </ul>
+    </div>
+
+    <!-- Модальное окно 1 -->
+    <div id="modal1" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modal1')">&times;</span>
+            <div class="modal-block">
+                <span class="modal-label">Стандартный запрос:</span> 
+                <span>Стандартный запрос</span>
+            </div>
+            <div class="modal-block">
+                <span class="modal-label">Номер услуги:</span> 
+                <span>CBA.150</span>
+            </div>
+            <div class="modal-block">
+                <span class="modal-label">Возможность закрыть на первой линии:</span> 
+                <span>Нет</span>
+            </div>
+            <div class="modal-block">
+                <span class="modal-label">Рабочая группа:</span> 
+                <span>Первичка</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно 2 -->
+    <div id="modal2" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modal2')">&times;</span>
+            <div class="modal-block">
+                <span class="modal-label">Запрос на обслуживание:</span> 
+                <span>Запрос на обслуживание</span>
+            </div>
+            <div class="modal-block">
+                <span class="modal-label">Выбор города:</span>
+                <select id="citySelect" onchange="updateWorkGroup()">
+                    <option value="msk">Москва</option>
+                    <option value="spb">Санкт-Петербург</option>
+                </select>
+            </div>
+            <div class="modal-block">
+                <span class="modal-label">Услуга:</span>
+                <span>Замена аксессуаров</span>
+            </div>
+            <div class="modal-block">
+                <span class="modal-label">Рабочая группа:</span>
+                <span id="workGroup">ГПП</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Функция для переключения видимости подсписка по его ID
+        function toggleSublist(sublistId, event) {
+            // Останавливаем всплытие события, чтобы не затронуть родительские элементы
+            if (event) {
+                event.stopPropagation();
+            }
+
+            var sublist = document.getElementById(sublistId);
+            if (sublist.style.display === "none" || sublist.style.display === "") {
+                sublist.style.display = "block"; // Показываем подсписок
+            } else {
+                sublist.style.display = "none"; // Скрываем подсписок
+            }
+        }
+
+        // Функция для открытия модального окна
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = "block";
+        }
+
+        // Функция для закрытия модального окна
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        // Закрытие модального окна при клике вне его
+        window.onclick = function(event) {
+            var modal1 = document.getElementById("modal1");
+            var modal2 = document.getElementById("modal2");
+            if (event.target == modal1) {
+                modal1.style.display = "none";
+            }
+            if (event.target == modal2) {
+                modal2.style.display = "none";
+            }
+        }
+
+        // Функция для обновления рабочей группы в зависимости от выбора города
+        function updateWorkGroup() {
+            var city = document.getElementById("citySelect").value;
+            var workGroupElement = document.getElementById("workGroup");
+            if (city === "msk") {
+                workGroupElement.textContent = "ГПП";
+            } else if (city === "spb") {
+                workGroupElement.textContent = "ГПП_номер_2";
+            }
+        }
+    </script>
+</body>
+</html>
